@@ -9,18 +9,39 @@ import Stack from '@mui/material/Stack';
 import Tooltip from '@mui/material/Tooltip';
 import { Bell as BellIcon } from '@phosphor-icons/react/dist/ssr/Bell';
 import { List as ListIcon } from '@phosphor-icons/react/dist/ssr/List';
-import { MagnifyingGlass as MagnifyingGlassIcon } from '@phosphor-icons/react/dist/ssr/MagnifyingGlass';
 import { Users as UsersIcon } from '@phosphor-icons/react/dist/ssr/Users';
 
 import { usePopover } from '@/hooks/use-popover';
-
 import { MobileNav } from './mobile-nav';
 import { UserPopover } from './user-popover';
 
+import axios from 'axios';
+import { Autocomplete, TextField } from '@mui/material';
+
 export function MainNav(): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
+  const [query, setQuery] = React.useState<string>('');
+  const [suggestions, setSuggestions] = React.useState<string[]>([]);
 
   const userPopover = usePopover<HTMLDivElement>();
+
+  // Fetch suggestions from API
+  const fetchSuggestions = async (input: string) => {
+    if (!input.trim()) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await axios.get(
+        `http://kenlyser.kenscio.in:3000/emails/autocomplete?query=${input}`
+      );
+      setSuggestions(response.data.suggestions || []);
+    } catch (error) {
+      console.error('Error fetching suggestions:', error);
+      setSuggestions([]);
+    }
+  };
 
   return (
     <React.Fragment>
@@ -48,12 +69,22 @@ export function MainNav(): React.JSX.Element {
             >
               <ListIcon />
             </IconButton>
-            <Tooltip title="Search">
-              <IconButton>
-                <MagnifyingGlassIcon />
-              </IconButton>
-            </Tooltip>
+
+            {/* Dynamic Search Bar */}
+            <Autocomplete
+              freeSolo
+              options={suggestions}
+              onInputChange={(event, newInputValue) => {
+                setQuery(newInputValue);
+                fetchSuggestions(newInputValue);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} label="Search emails" variant="outlined" size="small" />
+              )}
+              sx={{ width: 250 }}
+            />
           </Stack>
+
           <Stack sx={{ alignItems: 'center' }} direction="row" spacing={2}>
             <Tooltip title="Contacts">
               <IconButton>
