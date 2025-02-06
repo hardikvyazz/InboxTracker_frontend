@@ -22,6 +22,7 @@ export function MainNav(): React.JSX.Element {
   const [openNav, setOpenNav] = React.useState<boolean>(false);
   const [query, setQuery] = React.useState<string>('');
   const [suggestions, setSuggestions] = React.useState<string[]>([]);
+  const [selectedDomain, setSelectedDomain] = React.useState<string>(''); // State to store the selected domain
 
   const userPopover = usePopover<HTMLDivElement>();
 
@@ -40,6 +41,14 @@ export function MainNav(): React.JSX.Element {
     } catch (error) {
       console.error('Error fetching suggestions:', error);
       setSuggestions([]);
+    }
+  };
+
+  // Handle the domain selection from the Autocomplete suggestions
+  const handleDomainSelect = (event: React.ChangeEvent<{}>, newValue: string | null) => {
+    if (newValue) {
+      setSelectedDomain(newValue); // Store the selected domain
+      console.log('Selected Domain:', newValue); // You can log or use this value further
     }
   };
 
@@ -78,8 +87,9 @@ export function MainNav(): React.JSX.Element {
                 setQuery(newInputValue);
                 fetchSuggestions(newInputValue);
               }}
+              onChange={handleDomainSelect} // Handle domain selection
               renderInput={(params) => (
-                <TextField {...params} label="Search emails" variant="outlined" size="small" />
+                <TextField {...params} label="Search Domains" variant="outlined" size="small" />
               )}
               sx={{ width: 250 }}
             />
